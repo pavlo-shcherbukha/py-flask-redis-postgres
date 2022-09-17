@@ -1,0 +1,7 @@
+Flask
+gunicorn
+requests
+datetime
+redis
+sqlalchemy
+psycopg2[binary]
