@@ -1,6 +1,6 @@
 from datetime import datetime
 from operator import truediv
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 import json
 import logging
 import datetime
@@ -8,9 +8,6 @@ import base64
 import sys
 import os
 import redis
-
-import sqlalchemy.dialects.postgresql
-from sqlalchemy import create_engine
 
 application = Flask(__name__)
 
@@ -112,56 +109,20 @@ log("Підключення до Redis")
 irds_host = os.getenv('RDS_HOST');
 irds_port = os.getenv('RDS_PORT');
 irds_psw = os.getenv('RDS_PSW');
+irds_channel = os.getenv('RDS_CHANNEL');
 
 log('Підключеня до redis: ' + 'host=' + irds_host  )
 log('Підключеня до redis: ' + 'Порт=' + str(irds_port)  )
 log('Підключеня до redis: ' +  'Пароль: ' + irds_psw )
+    
+log('Підключеня до redis: ' + 'host=' + irds_host + ' Порт=' + irds_port + ' Пароль: ' + irds_psw + ' Канал=' + irds_channel)
 
+log("Connect to Redis")
 red = redis.StrictRedis(irds_host, irds_port, charset="utf-8", password=irds_psw, decode_responses=True)
 log(" Trying PING")
 log("1=======================")
 rping=red.ping()
 log( str(rping) )
-# Set KEY NAME FOR API COUNTER
-i_apicntr_key="APICALLS"
-if rping:
-    log("redis Connected")
-
-    log("set predefined key by 0 value: " +  i_apicntr_key ) 
-    red.set(i_apicntr_key, 0)
-    log("Check the valuse of key: " + i_apicntr_key )
-    log( "Read value: " + str( red.get(i_apicntr_key) ) )
-
-
-   
-else:
-    log("redis NOT CONNECTED!!!")    
-
-log("2=======================")
-
-
-
-log("1==========POSTGRES=============")
-db_name = os.getenv('DB_NAME')
-db_user = os.getenv('DB_USR')
-db_pass = os.getenv('DB_PSW')
-db_host = os.getenv('DB_HOST')
-db_port = os.getenv('DB_PORT')
-log("2==========POSTGRES=============")
-db_string = 'postgresql://{}:{}@{}:{}/{}'.format(db_user, db_pass, db_host, db_port, db_name)
-log("3==========POSTGRES=============" + db_string)
-db = create_engine(db_string)
-
-
-#==================================================
-# Функція підраховування викликів API
-#
-#=================================================
-def apicallscntr():
-    l_label="apicallscntr"
-    log("Старт", l_label)
-    return red.incrby( i_apicntr_key, 1)
-
 
 
 
@@ -201,42 +162,7 @@ def health():
     
     log('Health check', 'health')
     log('Call APICall counter', 'health')
-    r=apicallscntr()
-    log('Call APICall counter: redis-result=' + str(r), 'health')
+    log('Call APICall counter: redis-result=' , 'health')
     return json.dumps({'success':True}), 200, {'Content-Type':'application/json'}
 
 
-# =================================================================================
-# Метод повертає список всіх ключів в БД redis
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Повертає {'success':True} якщо контейнер працює
-# =================================================================================
-@application.route("/api/key", methods=["GET"])
-def get_keys_list():
-    l_label='get_keys_list'
-    log('Start', l_label)
-    log('Call redis api', l_label)
-    result=red.keys("*")
-    log('print redis-result= ' + json.dumps(result)  , l_label)
-    return json.dumps({'list': result}), 200, {'Content-Type':'application/json'}
-
-
-# =================================================================================
-# Метод повертає список всіх ключів в БД redis
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Повертає {'success':True} якщо контейнер працює
-# =================================================================================
-@application.route("/api/key", methods=["POST"])
-def set_key():
-    l_label='set_key'
-    log( 'старт', l_label)
-    log( 'Отримую тіло запиту', l_label)
-    body = request.get_json()
-    log( 'Розбираю тіло запиту в dict' + json.dumps(  body ), l_label)
-    keyname = body["keyname"]
-    keyval = body["keyvalue"]
-    log('Call redis API '  , l_label)
-    result=red.set(keyname, keyval)
-    log('print redis-result= '  , l_label)
-    log('print redis-result= ' + json.dumps(result)  , l_label)
-    return json.dumps({'redis_result': result}), 200, {'Content-Type':'application/json'}

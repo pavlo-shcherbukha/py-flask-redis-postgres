@@ -1,0 +1,54 @@
+version: '3.8'
+services:
+  rql_srvc:
+    build:
+      context: ./
+      dockerfile: Dockerfile_rql 
+      target: debug 
+    ports:
+      - "8081:8080"
+      - "5678:5678" 
+    #links:
+    #  - "dbserver"
+    #  - "redisserver"
+    environment:
+      FLASK_DEBUG: 0
+      FLASK_APP: "rql_app.webapp"
+      FLASK_ENV: "development"
+      APP_MODULE: "rql_app.webapp"
+      RDS_HOST: "redisserver"
+      RDS_PORT: 6379
+      RDS_PSW: "22"
+      DB_HOST: "dbserver"
+      DB_PORT: 5432
+      DB_PSW: "22"
+      DB_USR: "DEVADM"
+      DB_NAME: "shdb"
+
+    command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client -m flask run -h 0.0.0.0 -p 8080
+  worker_srvc:
+    build:
+      context: ./
+      dockerfile: Dockerfile_worker 
+      target: debug 
+    ports:
+      - "8082:8080"
+      - "5679:5678" 
+    #links:
+    #  - "dbserver"
+    #  - "redisserver"
+    environment:
+      FLASK_DEBUG: 0
+      FLASK_APP: "worker_app.webapp"
+      FLASK_ENV: "development"
+      APP_MODULE: "worker_app.webapp"
+      RDS_HOST: "redisserver"
+      RDS_PORT: 6379
+      RDS_PSW: "22"
+      DB_HOST: "dbserver"
+      DB_PORT: 5432
+      DB_PSW: "22"
+      DB_USR: "DEVADM"
+      DB_NAME: "shdb"
+
+    command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client -m flask run -h 0.0.0.0 -p 8080    

@@ -45,52 +45,18 @@ sh-composer-up-debug.cmd
 }
 ```
 
-### Отримати всі ключі в БД GET api/key
+# resoures
 
-Повертає перелік всіх ключів в БД redis у вигляді масиву:
+- https://stackoverflow.com/questions/43974888/run-script-after-container-entrypoint-in-docker-compose
+How to execute script when posgres starts
+our compose file then changes to something like this:
 
-- Запит
+postgres:
+  build: ./postgres
+  volumes:
+    - /shared_folder/postgresql:/var/lib/postgresql
+    - ./db-init-scripts:/docker-entrypoint-initdb.d
+  ports:
+    - "5432:5432"
 
-   без параметрів
-
-- Обов'язкові заголовки http в запиті
-
-```text
-
-    content-type: application/json
-
-```
-
-- Відповідь
-
-```json
-{
-  "list": ["shhkey2", "shkey1", "APICALLS", "book1", "myhash", "jsondata", "get", "test1", "counter", "xcntr", "sh-book","gey"]
-}
-
-```
-
-### Створити новий ключ та значення в БД POST api/key
-
-- Запит
-
-- Обов'язкові заголовки http в запиті
-
-```text
-
-    content-type: application/json
-
-
-```json
-{"keyname": "xkey1", "keyvalue": "xkeyvalue"}
-
-```
-
-- Успішна відповідь
-
-```json
-{
-  "redis_result": true
-}
-
-```
+whereas a local directory, e.g. db-init-scripts, contains your initialization scripts (rename it if you want). Copy create_db.sh to this folder and it will be automatically executed when you create a new container.
