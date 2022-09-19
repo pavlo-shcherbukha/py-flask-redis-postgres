@@ -114,6 +114,7 @@ irds_channel = os.getenv('RDS_CHANNEL');
 log('Підключеня до redis: ' + 'host=' + irds_host  )
 log('Підключеня до redis: ' + 'Порт=' + str(irds_port)  )
 log('Підключеня до redis: ' +  'Пароль: ' + irds_psw )
+
     
 log('Підключеня до redis: ' + 'host=' + irds_host + ' Порт=' + irds_port + ' Пароль: ' + irds_psw + ' Канал=' + irds_channel)
 
@@ -123,6 +124,14 @@ log(" Trying PING")
 log("1=======================")
 rping=red.ping()
 log( str(rping) )
+    if rping:
+        log("redis Connected")
+        sub = red.pubsub()    
+        sub.subscribe( irds_channel )    
+    else:
+        log("redis NOT CONNECTED!!!")    
+
+log("2=======================")
 
 
 

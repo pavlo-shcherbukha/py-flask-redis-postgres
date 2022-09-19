@@ -59,6 +59,7 @@ services:
       RDS_HOST: "redisserver"
       RDS_PORT: 6379
       RDS_PSW: "22"
+      RDS_CHANNEL: "shcmd"
       DB_HOST: "dbserver"
       DB_PORT: 5432
       DB_PSW: "22"
